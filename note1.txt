@@ -1,0 +1,52 @@
+lspci -k
+apt-get install net-tool
+#route
+ping YOUR_GATEWAY
+aptitude install bridge-utils uml-utilities
+brctl addr br20
+brctl show 
+ifconfig br20 192.168.20.1/24 up
+ifconfig br20
+ping 192.168.20.1
+暫時的橋接網路介面
+
+ifconfig br20 down
+brctl delbr br20
+移除br20
+
+永久的橋接網路介面
+#vi /etc/network/interfaces
+--------------------------------------------------------
+auto br20
+iface br10 inet static
+address 192.168.20.1            # 橋接網路介面之 IP
+netmask 255.255.255.0           # NetMask
+gateway 120.117.74.12           # eth0 IP，亦即橋接網路介面之 gateway。
+bridge_ports tap0               # 初始 tap，之後 br10 會自動新增其它 tap。
+bridge_fd 9
+bridge_hello 2
+bridge_maxage 12
+bridge_stp off
+---------------------------------------------------------
+ifconfig br20 up
+ifup br20
+ifconfig br20
+---------------------------------------------------------
+安裝PXE Server
+#apt-get install qemu-utils qemu-system-x86
+$qemu-img --help >>>測試安裝正常
+wget ftp://120.117.72.71/linux/debian-10.1.0-amd64-netinst.iso
+mkdir ~/virtualclassroom
+mv debian-10.1.0-amd64-netinst.iso virtualclassroom/
+cd virtualclassroom
+$qemu-img create pxeserver.img 2G -f qcow2
+
+$qemu-system-x86_64 -enable-kvm -m 2048 -cpu host -smp 2 -drive file=pxeserver.img,format=qcow2 -cdrom debian-10.1.0-amd64-netinst.iso -boot d
+
+進入安裝畫面
+選Taiwan | hostname : pxe 
+注意 -boot d 是光碟開機  -boot c 是正常開機
+
+$qemu-system-x86_64 -enable-kvm -m 2048 -cpu host -smp 2 -drive file=pxeserver.img,format=qcow2 -cdrom debian-10.1.0-amd64-netinst.iso -boot c
+
+du -sh pxeserver.img  >>>>>觀看img容量大小

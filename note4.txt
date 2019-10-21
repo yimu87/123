@@ -1,0 +1,117 @@
+自建鏡像站
+虛擬機
+#apt-get install proftpd-basic
+
+修改設定檔
+vi /etc/proftpd.conf
+
+用ctrl+v 把#移除一次
+
+<Anonymous ~ftp>
+   User                         ftp
+   Group                                nogroup
+   # We want clients to be able to login with "anonymous" as well as "ftp"
+   UserAlias                    anonymous ftp
+   # Cosmetic changes, all files belongs to ftp user
+   DirFakeUser  on ftp
+   DirFakeGroup on ftp
+
+   RequireValidShell            off
+
+   # Limit the maximum number of anonymous logins
+  MaxClients                    70
+
+   # We want 'welcome.msg' displayed at login, and '.message' displayed
+   # in each newly chdired directory.
+   DisplayLogin                 welcome.msg
+   DisplayChdir         .message
+
+   # Limit WRITE everywhere in the anonymous chroot
+   <Directory *>
+     <Limit WRITE>
+       DenyAll
+     </Limit>
+   </Directory>
+
+  # Uncomment this if you're brave.
+   # <Directory incoming>
+   #   # Umask 022 is a good standard umask to prevent new files and dirs
+   #   # (second parm) from being group and world writable.
+   #   Umask                            022  022
+   #            <Limit READ WRITE>
+   #            DenyAll
+   #            </Limit>
+   #            <Limit STOR>
+   #            AllowAll
+   #            </Limit>
+   # </Directory>
+
+ </Anonymous>
+-----------------------------------------------------------------------
+預設ftp目錄 /srv/ftp 改成 /home/ftp
+vi /etc/passwd
+
+/srv/ftp >> /home/ftp
+
+--------------------------------------
+/etc/init.d/proftpd restart >> 重開服務
+利用瀏覽器 測試ftp://192.168.20.254
+-----------------------------
+實體機
+下載老師鏡像站
+#apt-get install rsync
+#mkdir -p /home/ftp
+cd /home/ftp
+#rsync -av jconner@120.117.72.71:/src/ftp/debian . --progress --delete
+
+#apt-get install nfs-kernel-server  >>>安裝nfs 掛載工具
+
+vi /etc/exports
+
+/home/ftp/debian 192.168.20.254(ro,sync,no_subtree_check)
+----------------------------------------------------------
+exportfs -r  
+/etc/init.d/nfs-kernel-server restart
+shmount -e localhost
+------------------------------------------------
+----pxe server---
+#apt-get install nfs-common >>>> 安裝showmount
+#showmount -e 192.168.20.1
+-ok-
+
+手動掛載
+#mkdir -p /home/ftp/debian
+#mount -t nfs 192.168.20.1:/home/ftp/debian /home/ftp/debian
+自動掛載
+#vi /etc/fstab
+192.168.20.1:/home/ftp/debian /home/ftp/debian nfs defaults 0 0
+mount -a
+df -h >>> 看有沒有掛載上去
+
+-------------------------------------------------
+設定http server 可以連上ftp目錄
+因為debian 10 無法用ftp抓鏡像站，所以改用http
+vi /etc/apache2/sites-enabled/000-default.conf
+
+Document /var/www/html 複製一行註解
+改成Document /home/ftp
+
+vi /etc/apache2/apache2.conf
+
+複製<Directory /var/www> >>>改成 <Directory /home/ftp>
+
+#/etc/init.d/apache2 restart
+
+瀏覽器 http://192.168.20.254
+-ok-
+------------------------------------
+實體機
+測試鏡像站
+vi /etc/apt/sourcet.list
+deb http://192.168.20.254/debian/ buster main contrib non-free
+
+#apt-get update
+-ok-
+
+
+

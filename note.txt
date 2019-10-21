@@ -1,0 +1,49 @@
+echo "PATH=$PATH:/sbin" >> ~/.bashrc
+apt-get install gcc cpp g++
+gcc -v
+cpp -v
+g++ -v
+wget ftp://120.117.72.71/advlinux/kernel.....deb
+wget ftp://120.117.72.71/advlinux/linux-4.19.72.tar.xz
+apt-get install libncurses5-dev bzip xz-utils
+要用su -
+#dpkg -i kernel......deb
+apt -f install
+cp linux-4.19.72.tar.xz /usr/src
+cd /usr/src
+tar xfva linux-4.19.72.tar.xz
+/usr/src #cd linux
+/usr/src/linux #cp /boot/config-4.19.0-6-amd64   .config
+make menuconfig
+缺套件
+apt-get install bison
+make menuconfig
+缺套件
+apt-get install flex
+/usr/src/linux # make menuconfig
+
+ General setup  --->
+    Kernel compression mode (XZ)  --->
+
+ Processor type and features  --->
+    Processor family (Core 2/newer Xeon)  --->
+
+[*] Networking support  --->
+    Networking options  --->
+        [*] Network packet filtering framework (Netfilter)  ---
+                 IP: Netfilter Configuration  --->   M
+                 IPv6: Netfilter Configuration  ---> M
+#time make-kpkg --initrd --revision=1.0.lpm kernel_image -j8
+----error-----
+apt-get install libelf-dev libssl-dev
+#time make-kpkg --initrd --revision=1.0.lpm kernel_image -j8
+如果卡住
+make clean
+vi .config  >>>> CONFIG_TRUSTED_KEYS="">>> 這行註解
+make menuconfig >> save完跳出
+#time make-kpkg --initrd --revision=1.0.lpm kernel_image -j8
+/usr/src #dpkg -i linux-image......_amd64.deb
+重開機
+uname -r >>>看核心版本
+
+
